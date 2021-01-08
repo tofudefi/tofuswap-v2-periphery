@@ -1,6 +1,6 @@
-pragma solidity >=0.6.2;
+pragma solidity =0.5.14;
 
-interface IUniswapV2Router01 {
+interface ITofuswapV2Router01 {
     function factory() external pure returns (address);
     function WTRX() external pure returns (address);
 

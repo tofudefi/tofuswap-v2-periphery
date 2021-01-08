@@ -1,8 +1,8 @@
-pragma solidity >=0.6.2;
+pragma solidity =0.5.14;
 
-import './IUniswapV2Router01.sol';
+import './ITofuswapV2Router01.sol';
 
-interface IUniswapV2Router02 is IUniswapV2Router01 {
+interface ITofuswapV2Router02 is ITofuswapV2Router01 {
     function removeLiquidityTRXSupportingFeeOnTransferTokens(
         address token,
         uint liquidity,

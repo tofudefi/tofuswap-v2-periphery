@@ -1,21 +1,21 @@
-pragma solidity =0.6.6;
+pragma solidity =0.5.14;
 
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import '@tofudefi/tofuswap-v2-core/contracts/interfaces/ITofuswapV2Pair.sol';
 import '@uniswap/lib/contracts/libraries/Babylonian.sol';
 import '../libraries/TransferHelper.sol';
 
 import '../interfaces/IERC20.sol';
-import '../interfaces/IUniswapV2Router01.sol';
+import '../interfaces/ITofuswapV2Router01.sol';
 import '../libraries/SafeMath.sol';
-import '../libraries/UniswapV2Library.sol';
+import '../libraries/TofuswapV2Library.sol';
 
 contract ExampleSwapToPrice {
     using SafeMath for uint256;
 
-    IUniswapV2Router01 public immutable router;
+    ITofuswapV2Router01 public immutable router;
     address public immutable factory;
 
-    constructor(address factory_, IUniswapV2Router01 router_) public {
+    constructor(address factory_, ITofuswapV2Router01 router_) public {
         factory = factory_;
         router = router_;
     }
@@ -62,7 +62,7 @@ contract ExampleSwapToPrice {
         bool aToB;
         uint256 amountIn;
         {
-            (uint256 reserveA, uint256 reserveB) = UniswapV2Library.getReserves(factory, tokenA, tokenB);
+            (uint256 reserveA, uint256 reserveB) = TofuswapV2Library.getReserves(factory, tokenA, tokenB);
             (aToB, amountIn) = computeProfitMaximizingTrade(
                 truePriceTokenA, truePriceTokenB,
                 reserveA, reserveB

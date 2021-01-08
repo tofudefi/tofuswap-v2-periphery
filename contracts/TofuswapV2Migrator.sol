@@ -1,20 +1,20 @@
-pragma solidity =0.6.6;
+pragma solidity =0.5.14;
 
 import './libraries/TransferHelper.sol';
 
-import './interfaces/IUniswapV2Migrator.sol';
-import './interfaces/V1/IUniswapV1Factory.sol';
-import './interfaces/V1/IUniswapV1Exchange.sol';
-import './interfaces/IUniswapV2Router01.sol';
+import './interfaces/ITofuswapV2Migrator.sol';
+import './interfaces/V1/ITofuswapV1Factory.sol';
+import './interfaces/V1/ITofuswapV1Exchange.sol';
+import './interfaces/ITofuswapV2Router01.sol';
 import './interfaces/IERC20.sol';
 
-contract UniswapV2Migrator is IUniswapV2Migrator {
-    IUniswapV1Factory immutable factoryV1;
-    IUniswapV2Router01 immutable router;
+contract TofuswapV2Migrator is ITofuswapV2Migrator {
+    ITofuswapV1Factory immutable factoryV1;
+    ITofuswapV2Router01 immutable router;
 
     constructor(address _factoryV1, address _router) public {
-        factoryV1 = IUniswapV1Factory(_factoryV1);
-        router = IUniswapV2Router01(_router);
+        factoryV1 = ITofuswapV1Factory(_factoryV1);
+        router = ITofuswapV2Router01(_router);
     }
 
     // @TRON:
@@ -30,7 +30,7 @@ contract UniswapV2Migrator is IUniswapV2Migrator {
         external
         override
     {
-        IUniswapV1Exchange exchangeV1 = IUniswapV1Exchange(factoryV1.getExchange(token));
+        ITofuswapV1Exchange exchangeV1 = ITofuswapV1Exchange(factoryV1.getExchange(token));
         uint liquidityV1 = exchangeV1.balanceOf(msg.sender);
         require(exchangeV1.transferFrom(msg.sender, address(this), liquidityV1), 'TRANSFER_FROM_FAILED');
         (uint amountTRXV1, uint amountTokenV1) = exchangeV1.removeLiquidity(liquidityV1, 1, 1, uint(-1));
