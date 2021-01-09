@@ -15,11 +15,11 @@ const overrides = {
 }
 
 enum RouterVersion {
-  UniswapV2Router01 = 'UniswapV2Router01',
-  UniswapV2Router02 = 'UniswapV2Router02'
+  TofuswapV2Router01 = 'TofuswapV2Router01',
+  TofuswapV2Router02 = 'TofuswapV2Router02'
 }
 
-describe('UniswapV2Router{01,02}', () => {
+describe('TofuswapV2Router{01,02}', () => {
   for (const routerVersion of Object.keys(RouterVersion)) {
     const provider = new MockProvider({
       hardfork: 'istanbul',
@@ -42,15 +42,15 @@ describe('UniswapV2Router{01,02}', () => {
       const fixture = await loadFixture(v2Fixture)
       token0 = fixture.token0
       token1 = fixture.token1
-      WTRX = fixture.WETH
-      WTRXPartner = fixture.WETHPartner
+      WTRX = fixture.WTRX
+      WTRXPartner = fixture.WTRXPartner
       factory = fixture.factoryV2
       router = {
-        [RouterVersion.UniswapV2Router01]: fixture.router01,
-        [RouterVersion.UniswapV2Router02]: fixture.router02
+        [RouterVersion.TofuswapV2Router01]: fixture.router01,
+        [RouterVersion.TofuswapV2Router02]: fixture.router02
       }[routerVersion as RouterVersion]
       pair = fixture.pair
-      WTRXPair = fixture.WETHPair
+      WTRXPair = fixture.WTRXPair
       routerEventEmitter = fixture.routerEventEmitter
     })
 
@@ -369,8 +369,8 @@ describe('UniswapV2Router{01,02}', () => {
           /*
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.UniswapV2Router01]: 101876,
-              [RouterVersion.UniswapV2Router02]: 101898
+              [RouterVersion.TofuswapV2Router01]: 101876,
+              [RouterVersion.TofuswapV2Router02]: 101898
             }[routerVersion as RouterVersion]
           )
           */
@@ -520,8 +520,8 @@ describe('UniswapV2Router{01,02}', () => {
           /*
           expect(receipt.gasUsed).to.eq(
             {
-              [RouterVersion.UniswapV2Router01]: 138770,
-              [RouterVersion.UniswapV2Router02]: 138770
+              [RouterVersion.TofuswapV2Router01]: 138770,
+              [RouterVersion.TofuswapV2Router02]: 138770
             }[routerVersion as RouterVersion]
           )
           */
