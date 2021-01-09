@@ -41,7 +41,7 @@
     "copy-v1-artifacts": "ncp ./buildV1 ./build",
     "precompile": "npm run clean",
     "compile": "waffle .waffle.json",
-    "postcompile-disabled": "npm run copy-v1-artifacts",
+    "postcompile": "npm run copy-v1-artifacts",
     "pretest": "npm run compile",
     "test": "mocha",
     "prepublishOnly-disabled": "npm test",
