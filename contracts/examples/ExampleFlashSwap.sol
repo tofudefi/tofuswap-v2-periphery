@@ -10,9 +10,9 @@ import '../interfaces/IERC20.sol';
 import '../interfaces/IWTRX.sol';
 
 contract ExampleFlashSwap is ITofuswapV2Callee {
-    ITofuswapV1Factory immutable factoryV1;
-    address immutable factory;
-    IWTRX immutable WTRX;
+    ITofuswapV1Factory public factoryV1;
+    address public factory;
+    IWTRX public WTRX;
 
     constructor(address _factory, address _factoryV1, address router) public {
         factoryV1 = ITofuswapV1Factory(_factoryV1);
@@ -22,10 +22,10 @@ contract ExampleFlashSwap is ITofuswapV2Callee {
 
     // needs to accept TRX from any V1 exchange and WTRX. ideally this could be enforced, as in the router,
     // but it's not possible because it requires a call to the v1 factory, which takes too much gas
-    receive() external payable {}
+    function () external payable {}
 
     // gets tokens/WTRX via a V2 flash swap, swaps for the TRX/tokens on V1, repays V2, and keeps the rest!
-    function uniswapV2Call(address sender, uint amount0, uint amount1, bytes calldata data) external override {
+    function tofuswapV2Call(address sender, uint amount0, uint amount1, bytes calldata data) external {
         address[] memory path = new address[](2);
         uint amountToken;
         uint amountTRX;
@@ -50,14 +50,14 @@ contract ExampleFlashSwap is ITofuswapV2Callee {
             uint amountReceived = exchangeV1.tokenToEthSwapInput(amountToken, minTRX, uint(-1));
             uint amountRequired = TofuswapV2Library.getAmountsIn(factory, amountToken, path)[0];
             assert(amountReceived > amountRequired); // fail if we didn't get enough TRX back to repay our flash loan
-            WTRX.deposit{value: amountRequired}();
+            WTRX.deposit.value(amountRequired)();
             assert(WTRX.transfer(msg.sender, amountRequired)); // return WTRX to V2 pair
-            (bool success,) = sender.call{value: amountReceived - amountRequired}(new bytes(0)); // keep the rest! (TRX)
+            (bool success,) = sender.call.value(amountReceived - amountRequired)(new bytes(0)); // keep the rest! (TRX)
             assert(success);
         } else {
             (uint minTokens) = abi.decode(data, (uint)); // slippage parameter for V1, passed in by caller
             WTRX.withdraw(amountTRX);
-            uint amountReceived = exchangeV1.ethToTokenSwapInput{value: amountTRX}(minTokens, uint(-1));
+            uint amountReceived = exchangeV1.ethToTokenSwapInput.value(amountTRX)(minTokens, uint(-1));
             uint amountRequired = TofuswapV2Library.getAmountsIn(factory, amountTRX, path)[0];
             assert(amountReceived > amountRequired); // fail if we didn't get enough tokens back to repay our flash loan
             assert(token.transfer(msg.sender, amountRequired)); // return tokens to V2 pair

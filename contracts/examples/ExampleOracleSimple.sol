@@ -14,9 +14,9 @@ contract ExampleOracleSimple {
 
     uint public constant PERIOD = 24 hours;
 
-    ITofuswapV2Pair immutable pair;
-    address public immutable token0;
-    address public immutable token1;
+    ITofuswapV2Pair public pair;
+    address public token0;
+    address public token1;
 
     uint    public price0CumulativeLast;
     uint    public price1CumulativeLast;
@@ -25,15 +25,14 @@ contract ExampleOracleSimple {
     FixedPoint.uq112x112 public price1Average;
 
     constructor(address factory, address tokenA, address tokenB) public {
-        ITofuswapV2Pair _pair = ITofuswapV2Pair(TofuswapV2Library.pairFor(factory, tokenA, tokenB));
-        pair = _pair;
-        token0 = _pair.token0();
-        token1 = _pair.token1();
-        price0CumulativeLast = _pair.price0CumulativeLast(); // fetch the current accumulated price value (1 / 0)
-        price1CumulativeLast = _pair.price1CumulativeLast(); // fetch the current accumulated price value (0 / 1)
+        pair = ITofuswapV2Pair(ITofuswapV2Factory(factory).getPair(tokenA, tokenB));
+        token0 = pair.token0();
+        token1 = pair.token1();
+        price0CumulativeLast = pair.price0CumulativeLast(); // fetch the current accumulated price value (1 / 0)
+        price1CumulativeLast = pair.price1CumulativeLast(); // fetch the current accumulated price value (0 / 1)
         uint112 reserve0;
         uint112 reserve1;
-        (reserve0, reserve1, blockTimestampLast) = _pair.getReserves();
+        (reserve0, reserve1, blockTimestampLast) = pair.getReserves();
         require(reserve0 != 0 && reserve1 != 0, 'ExampleOracleSimple: NO_RESERVES'); // ensure that there's liquidity in the pair
     }
 

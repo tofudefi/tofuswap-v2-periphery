@@ -9,8 +9,8 @@ import './interfaces/IERC20.sol';
 import './interfaces/IWTRX.sol';
 
 contract TofuswapV2Router01 is ITofuswapV2Router01 {
-    address public immutable override factory;
-    address public immutable override WTRX;
+    address public factory;
+    address public WTRX;
 
     modifier ensure(uint deadline) {
         require(deadline >= block.timestamp, 'TofuswapV2Router: EXPIRED');
@@ -22,7 +22,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         WTRX = _WTRX;
     }
 
-    receive() external payable {
+    function () external payable {
         assert(msg.sender == WTRX); // only accept TRX via fallback from the WTRX contract
     }
 
@@ -64,7 +64,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         uint amountBMin,
         address to,
         uint deadline
-    ) external override ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
+    ) external ensure(deadline) returns (uint amountA, uint amountB, uint liquidity) {
         (amountA, amountB) = _addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin);
         address pair = TofuswapV2Library.pairFor(factory, tokenA, tokenB);
         TransferHelper.safeTransferFrom(tokenA, msg.sender, pair, amountA);
@@ -78,7 +78,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         uint amountTRXMin,
         address to,
         uint deadline
-    ) external override payable ensure(deadline) returns (uint amountToken, uint amountTRX, uint liquidity) {
+    ) external payable ensure(deadline) returns (uint amountToken, uint amountTRX, uint liquidity) {
         (amountToken, amountTRX) = _addLiquidity(
             token,
             WTRX,
@@ -89,7 +89,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         );
         address pair = TofuswapV2Library.pairFor(factory, token, WTRX);
         TransferHelper.safeTransferFrom(token, msg.sender, pair, amountToken);
-        IWTRX(WTRX).deposit{value: amountTRX}();
+        IWTRX(WTRX).deposit.value(amountTRX)();
         assert(IWTRX(WTRX).transfer(pair, amountTRX));
         liquidity = ITofuswapV2Pair(pair).mint(to);
         if (msg.value > amountTRX) TransferHelper.safeTransferTRX(msg.sender, msg.value - amountTRX); // refund dust trx, if any
@@ -104,7 +104,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         uint amountBMin,
         address to,
         uint deadline
-    ) public override ensure(deadline) returns (uint amountA, uint amountB) {
+    ) public ensure(deadline) returns (uint amountA, uint amountB) {
         address pair = TofuswapV2Library.pairFor(factory, tokenA, tokenB);
         ITofuswapV2Pair(pair).transferFrom(msg.sender, pair, liquidity); // send liquidity to pair
         (uint amount0, uint amount1) = ITofuswapV2Pair(pair).burn(to);
@@ -120,7 +120,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         uint amountTRXMin,
         address to,
         uint deadline
-    ) public override ensure(deadline) returns (uint amountToken, uint amountTRX) {
+    ) public ensure(deadline) returns (uint amountToken, uint amountTRX) {
         (amountToken, amountTRX) = removeLiquidity(
             token,
             WTRX,
@@ -143,7 +143,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         address to,
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
-    ) external override returns (uint amountA, uint amountB) {
+    ) external returns (uint amountA, uint amountB) {
         address pair = TofuswapV2Library.pairFor(factory, tokenA, tokenB);
         uint value = approveMax ? uint(-1) : liquidity;
         ITofuswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
@@ -157,7 +157,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         address to,
         uint deadline,
         bool approveMax, uint8 v, bytes32 r, bytes32 s
-    ) external override returns (uint amountToken, uint amountTRX) {
+    ) external returns (uint amountToken, uint amountTRX) {
         address pair = TofuswapV2Library.pairFor(factory, token, WTRX);
         uint value = approveMax ? uint(-1) : liquidity;
         ITofuswapV2Pair(pair).permit(msg.sender, address(this), value, deadline, v, r, s);
@@ -182,7 +182,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         address[] calldata path,
         address to,
         uint deadline
-    ) external override ensure(deadline) returns (uint[] memory amounts) {
+    ) external ensure(deadline) returns (uint[] memory amounts) {
         amounts = TofuswapV2Library.getAmountsOut(factory, amountIn, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'TofuswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(path[0], msg.sender, TofuswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
@@ -194,7 +194,7 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         address[] calldata path,
         address to,
         uint deadline
-    ) external override ensure(deadline) returns (uint[] memory amounts) {
+    ) external ensure(deadline) returns (uint[] memory amounts) {
         amounts = TofuswapV2Library.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= amountInMax, 'TofuswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(path[0], msg.sender, TofuswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]);
@@ -202,7 +202,6 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
     }
     function swapExactTRXForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
-        override
         payable
         ensure(deadline)
         returns (uint[] memory amounts)
@@ -210,13 +209,12 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         require(path[0] == WTRX, 'TofuswapV2Router: INVALID_PATH');
         amounts = TofuswapV2Library.getAmountsOut(factory, msg.value, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'TofuswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
-        IWTRX(WTRX).deposit{value: amounts[0]}();
+        IWTRX(WTRX).deposit.value(amounts[0])();
         assert(IWTRX(WTRX).transfer(TofuswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
     }
     function swapTokensForExactTRX(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
-        override
         ensure(deadline)
         returns (uint[] memory amounts)
     {
@@ -230,7 +228,6 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
     }
     function swapExactTokensForTRX(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
-        override
         ensure(deadline)
         returns (uint[] memory amounts)
     {
@@ -244,7 +241,6 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
     }
     function swapTRXForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
         external
-        override
         payable
         ensure(deadline)
         returns (uint[] memory amounts)
@@ -252,29 +248,29 @@ contract TofuswapV2Router01 is ITofuswapV2Router01 {
         require(path[0] == WTRX, 'TofuswapV2Router: INVALID_PATH');
         amounts = TofuswapV2Library.getAmountsIn(factory, amountOut, path);
         require(amounts[0] <= msg.value, 'TofuswapV2Router: EXCESSIVE_INPUT_AMOUNT');
-        IWTRX(WTRX).deposit{value: amounts[0]}();
+        IWTRX(WTRX).deposit.value(amounts[0])();
         assert(IWTRX(WTRX).transfer(TofuswapV2Library.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to);
         if (msg.value > amounts[0]) TransferHelper.safeTransferTRX(msg.sender, msg.value - amounts[0]); // refund dust trx, if any
     }
 
-    function quote(uint amountA, uint reserveA, uint reserveB) public pure override returns (uint amountB) {
+    function quote(uint amountA, uint reserveA, uint reserveB) public pure returns (uint amountB) {
         return TofuswapV2Library.quote(amountA, reserveA, reserveB);
     }
 
-    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) public pure override returns (uint amountOut) {
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) public pure returns (uint amountOut) {
         return TofuswapV2Library.getAmountOut(amountIn, reserveIn, reserveOut);
     }
 
-    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) public pure override returns (uint amountIn) {
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) public pure returns (uint amountIn) {
         return TofuswapV2Library.getAmountOut(amountOut, reserveIn, reserveOut);
     }
 
-    function getAmountsOut(uint amountIn, address[] memory path) public view override returns (uint[] memory amounts) {
+    function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts) {
         return TofuswapV2Library.getAmountsOut(factory, amountIn, path);
     }
 
-    function getAmountsIn(uint amountOut, address[] memory path) public view override returns (uint[] memory amounts) {
+    function getAmountsIn(uint amountOut, address[] memory path) public view returns (uint[] memory amounts) {
         return TofuswapV2Library.getAmountsIn(factory, amountOut, path);
     }
 }

@@ -5,7 +5,7 @@ import '../interfaces/ITofuswapV2Router01.sol';
 contract RouterEventEmitter {
     event Amounts(uint[] amounts);
 
-    receive() external payable {}
+    function () external payable {}
 
     function swapExactTokensForTokens(
         address router,

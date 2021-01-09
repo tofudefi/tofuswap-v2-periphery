@@ -12,8 +12,8 @@ import '../libraries/TofuswapV2Library.sol';
 contract ExampleSwapToPrice {
     using SafeMath for uint256;
 
-    ITofuswapV2Router01 public immutable router;
-    address public immutable factory;
+    ITofuswapV2Router01 public router;
+    address public factory;
 
     constructor(address factory_, ITofuswapV2Router01 router_) public {
         factory = factory_;
