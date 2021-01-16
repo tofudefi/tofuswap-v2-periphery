@@ -1,9 +1,18 @@
 pragma solidity =0.5.14;
 
 import '../interfaces/ITofuswapV2Router01.sol';
+import '../interfaces/IWTRX.sol';
 
 contract RouterEventEmitter {
     event Amounts(uint[] amounts);
+
+    address public factory;
+    IWTRX public WTRX;
+    
+    constructor(address _factory, address _WTRX) public {
+        factory = _factory;
+        WTRX = IWTRX(_WTRX);
+    } 
 
     function () external payable {}
 

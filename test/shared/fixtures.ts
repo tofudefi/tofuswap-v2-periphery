@@ -56,7 +56,7 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
   const router02 = await deployContract(wallet, TofuswapV2Router02, [factoryV2.address, WTRX.address], overrides)
 
   // event emitter for testing
-  const routerEventEmitter = await deployContract(wallet, RouterEventEmitter, [])
+  const routerEventEmitter = await deployContract(wallet, RouterEventEmitter, [factoryV2.address, WTRX.address])
 
   // deploy migrator
   const migrator = await deployContract(wallet, TofuswapV2Migrator, [factoryV1.address, router01.address], overrides)
