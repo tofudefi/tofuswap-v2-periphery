@@ -29,12 +29,14 @@ describe('ExampleSwapToPrice', () => {
   let pair: Contract
   let swapToPriceExample: Contract
   let router: Contract
+  let tofuFreeze: Contract  
   beforeEach(async function() {
     const fixture = await loadFixture(v2Fixture)
     token0 = fixture.token0
     token1 = fixture.token1
     pair = fixture.pair
     router = fixture.router
+    tofuFreeze = fixture.tofuFreeze    
     swapToPriceExample = await deployContract(
       wallet,
       ExampleSwapToPrice,
@@ -44,6 +46,7 @@ describe('ExampleSwapToPrice', () => {
   })
 
   beforeEach('set up price differential of 1:100', async () => {
+    await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
     await token0.transfer(pair.address, expandTo18Decimals(10))
     await token1.transfer(pair.address, expandTo18Decimals(1000))
     await pair.sync(overrides)

@@ -35,6 +35,7 @@ describe('TofuswapV2Router{01,02}', () => {
     let WTRXPartner: Contract
     let factory: Contract
     let router: Contract
+    let tofuFreeze: Contract
     let pair: Contract
     let WTRXPair: Contract
     let routerEventEmitter: Contract
@@ -42,6 +43,7 @@ describe('TofuswapV2Router{01,02}', () => {
       const fixture = await loadFixture(v2Fixture)
       token0 = fixture.token0
       token1 = fixture.token1
+      tofuFreeze = fixture.tofuFreeze
       WTRX = fixture.WTRX
       WTRXPartner = fixture.WTRXPartner
       factory = fixture.factoryV2
@@ -310,6 +312,7 @@ describe('TofuswapV2Router{01,02}', () => {
         beforeEach(async () => {
           await addLiquidity(token0Amount, token1Amount)
           await token0.approve(router.address, MaxUint256)
+          await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
         })
 
         it('happy path', async () => {
@@ -385,6 +388,7 @@ describe('TofuswapV2Router{01,02}', () => {
 
         beforeEach(async () => {
           await addLiquidity(token0Amount, token1Amount)
+          await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
         })
 
         it('happy path', async () => {
@@ -440,6 +444,7 @@ describe('TofuswapV2Router{01,02}', () => {
           await WTRXPair.mint(wallet.address, overrides)
 
           await token0.approve(router.address, MaxUint256)
+          await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
         })
 
         it('happy path', async () => {
@@ -539,6 +544,7 @@ describe('TofuswapV2Router{01,02}', () => {
           await WTRX.deposit({ value: TRXAmount })
           await WTRX.transfer(WTRXPair.address, TRXAmount)
           await WTRXPair.mint(wallet.address, overrides)
+          await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
         })
 
         it('happy path', async () => {
@@ -607,6 +613,7 @@ describe('TofuswapV2Router{01,02}', () => {
           await WTRX.deposit({ value: TRXAmount })
           await WTRX.transfer(WTRXPair.address, TRXAmount)
           await WTRXPair.mint(wallet.address, overrides)
+          await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
         })
 
         it('happy path', async () => {
@@ -675,6 +682,7 @@ describe('TofuswapV2Router{01,02}', () => {
           await WTRX.deposit({ value: TRXAmount })
           await WTRX.transfer(WTRXPair.address, TRXAmount)
           await WTRXPair.mint(wallet.address, overrides)
+          await tofuFreeze.transfer(token0.address, bigNumberify('99999000000'))
         })
 
         it('happy path', async () => {

@@ -8,10 +8,12 @@ contract RouterEventEmitter {
 
     address public factory;
     IWTRX public WTRX;
+    address public tofuFreeze;    
     
-    constructor(address _factory, address _WTRX) public {
+    constructor(address _factory, address _WTRX, address _tofuFreeze) public {
         factory = _factory;
         WTRX = IWTRX(_WTRX);
+        tofuFreeze = _tofuFreeze;
     } 
 
     function () external payable {}

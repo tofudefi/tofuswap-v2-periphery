@@ -29,6 +29,7 @@ interface V2Fixture {
   factoryV2: Contract
   router01: Contract
   router02: Contract
+  tofuFreeze: Contract
   routerEventEmitter: Contract
   router: Contract
   migrator: Contract
@@ -39,6 +40,7 @@ interface V2Fixture {
 
 export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Promise<V2Fixture> {
   // deploy tokens
+  const tofuFreeze = await deployContract(wallet, ERC20, [100000000000], overrides)
   const tokenA = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
   const tokenB = await deployContract(wallet, ERC20, [expandTo18Decimals(10000)])
   const WTRX = await deployContract(wallet, WTRX9)
@@ -49,14 +51,14 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
   await factoryV1.initializeFactory((await deployContract(wallet, TofuswapV1Exchange, [])).address)
 
   // deploy V2
-  const factoryV2 = await deployContract(wallet, TofuswapV2Factory, [wallet.address])
+  const factoryV2 = await deployContract(wallet, TofuswapV2Factory, [wallet.address, tofuFreeze.address])
 
   // deploy routers
   const router01 = await deployContract(wallet, TofuswapV2Router01, [factoryV2.address, WTRX.address], overrides)
   const router02 = await deployContract(wallet, TofuswapV2Router02, [factoryV2.address, WTRX.address], overrides)
 
   // event emitter for testing
-  const routerEventEmitter = await deployContract(wallet, RouterEventEmitter, [factoryV2.address, WTRX.address])
+  const routerEventEmitter = await deployContract(wallet, RouterEventEmitter, [factoryV2.address, WTRX.address, tofuFreeze.address])
 
   // deploy migrator
   const migrator = await deployContract(wallet, TofuswapV2Migrator, [factoryV1.address, router01.address], overrides)
@@ -91,6 +93,7 @@ export async function v2Fixture(provider: Web3Provider, [wallet]: Wallet[]): Pro
     router01,
     router02,
     router: router02, // the default router, 01 had a minor bug
+    tofuFreeze,
     routerEventEmitter,
     migrator,
     WTRXExchangeV1,
