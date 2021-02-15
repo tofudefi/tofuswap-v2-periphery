@@ -15,32 +15,18 @@ library TofuswapV2Library {
         require(token0 != address(0), 'TofuswapV2Library: ZERO_ADDRESS');
     }
 
-    // @TRON
-    // Tron does not have create2 opcode so we just check if the pair
-    // exists (if not, we create it) and return its address.
-    // @TODO(tron): ensure this does not break some code that needs the
-    // pair address before it is created :/
-    // @TODO(tron): idea: split pairFor in a view (pairFor) and non-view
-    // function which ensures the pair exists before returning its
-    // address?
-    function pairFor(address factory, address tokenA, address tokenB)
-    internal view returns (address pair) {
-      pair = ITofuswapV2Factory(factory).getPair(tokenA, tokenB);
-      require(pair != address(0), "pairFor called on not yet created pair");
-      return pair;
-    }
+
     // calculates the CREATE2 address for a pair without making any external calls
-    /*
+    // TODO: This should be updated in case of changes in core and modified for TRON on deploy
     function pairFor(address factory, address tokenA, address tokenB) internal pure returns (address pair) {
         (address token0, address token1) = sortTokens(tokenA, tokenB);
         pair = address(uint(keccak256(abi.encodePacked(
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
+                hex'ac7eb8a6c55e312a713a76c3b66c2c200c2a94ef54945093e2c8fb74a17727c8' // init code hash
             ))));
     }
-    */
 
     // fetches and sorts the reserves for a pair
     function getReserves(address factory, address tokenA, address tokenB) internal view returns (uint reserveA, uint reserveB) {
