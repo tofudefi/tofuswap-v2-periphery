@@ -4,8 +4,8 @@ interface ITofuswapV2Router02 {
 
     //ITofuswapV2Router01
 
-    function factory() external pure returns (address);
-    function WTRX() external pure returns (address);
+    function factory() external view returns (address);
+    function WTRX() external view returns (address);
 
     function addLiquidity(
         address tokenA,
