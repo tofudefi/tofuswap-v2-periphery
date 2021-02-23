@@ -215,32 +215,36 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
     function getFeeBasisPoints() internal view returns (uint feeBasisPoints) {
         uint originTofuBalance = ITofuFreeze(tofuFreeze).balanceOf(tx.origin);
 
-	if (originTofuBalance >= 10000000000) {
+	if (originTofuBalance >= 100000000000) {
+	    return 10;
+	} else if (originTofuBalance >= 10000000000) {
+	    return 15;
+	} else if (originTofuBalance >= 1000000000) {
 	    return 20;
-	} else if (originTofuBalance >= 5000000000) {
-	    return 22;
-	} else if (originTofuBalance >= 2000000000) {
-	    return 24;
-	} else if (originTofuBalance >= 500000000) {
-	    return 26;
 	} else if (originTofuBalance >= 100000000) {
-	    return 28;
-	}
+	    return 25;
+	} 
 	return 30;
     } 
 
     // **** SWAP ****
     // requires the initial amount to have already been sent to the first pair
-    function _swap(uint[] memory amounts, address[] memory path, address _to) internal {
+    function _swap(uint[] memory amounts, address[] memory path, address _to, bool withTofu) internal {
         for (uint i; i < path.length - 1; i++) {
             (address input, address output) = (path[i], path[i + 1]);
             (address token0,) = TofuswapV2LibraryTofu.sortTokens(input, output);
             uint amountOut = amounts[i + 1];
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOut) : (amountOut, uint(0));
             address to = i < path.length - 2 ? TofuswapV2LibraryTofu.pairFor(factory, output, path[i + 2]) : _to;
-            ITofuswapV2Pair(TofuswapV2LibraryTofu.pairFor(factory, input, output)).swapWithTofu(
-                amount0Out, amount1Out, to, new bytes(0)
-            );
+            if (withTofu) {
+	        ITofuswapV2Pair(TofuswapV2LibraryTofu.pairFor(factory, input, output)).swapWithTofu(
+		        amount0Out, amount1Out, to, new bytes(0)
+		);
+            } else {
+	        ITofuswapV2Pair(TofuswapV2LibraryTofu.pairFor(factory, input, output)).swap(
+		        amount0Out, amount1Out, to, new bytes(0)
+		);
+            }
         }
     }
     function swapExactTokensForTokens(
@@ -250,12 +254,13 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         address to,
         uint deadline
     ) external ensure(deadline) returns (uint[] memory amounts) {
-        amounts = TofuswapV2LibraryTofu.getAmountsOut(factory, amountIn, getFeeBasisPoints(), path);
+        uint feeBasisPoints = getFeeBasisPoints();
+        amounts = TofuswapV2LibraryTofu.getAmountsOut(factory, amountIn, feeBasisPoints, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'TofuswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]
         );
-        _swap(amounts, path, to);
+        _swap(amounts, path, to, feeBasisPoints < 30);
     }
     function swapTokensForExactTokens(
         uint amountOut,
@@ -264,12 +269,13 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         address to,
         uint deadline
     ) external ensure(deadline) returns (uint[] memory amounts) {
-        amounts = TofuswapV2LibraryTofu.getAmountsIn(factory, amountOut, getFeeBasisPoints(), path);
+        uint feeBasisPoints = getFeeBasisPoints();
+        amounts = TofuswapV2LibraryTofu.getAmountsIn(factory, amountOut, feeBasisPoints, path);
         require(amounts[0] <= amountInMax, 'TofuswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]
         );
-        _swap(amounts, path, to);
+        _swap(amounts, path, to, feeBasisPoints < 30);
     }
     function swapExactTRXForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
@@ -278,11 +284,12 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[0] == WTRX, 'TofuswapV2Router: INVALID_PATH');
-        amounts = TofuswapV2LibraryTofu.getAmountsOut(factory, msg.value, getFeeBasisPoints(), path);
+        uint feeBasisPoints = getFeeBasisPoints();        
+        amounts = TofuswapV2LibraryTofu.getAmountsOut(factory, msg.value, feeBasisPoints, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'TofuswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         IWTRX(WTRX).deposit.value(amounts[0])();
         assert(IWTRX(WTRX).transfer(TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]));
-        _swap(amounts, path, to);
+        _swap(amounts, path, to, feeBasisPoints < 30);
     }
     function swapTokensForExactTRX(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
         external
@@ -290,12 +297,13 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WTRX, 'TofuswapV2Router: INVALID_PATH');
-        amounts = TofuswapV2LibraryTofu.getAmountsIn(factory, amountOut, getFeeBasisPoints(), path);
+        uint feeBasisPoints = getFeeBasisPoints();        
+        amounts = TofuswapV2LibraryTofu.getAmountsIn(factory, amountOut, feeBasisPoints, path);
         require(amounts[0] <= amountInMax, 'TofuswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]
         );
-        _swap(amounts, path, address(this));
+        _swap(amounts, path, address(this), feeBasisPoints < 30);
         IWTRX(WTRX).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferTRX(to, amounts[amounts.length - 1]);
     }
@@ -305,12 +313,13 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[path.length - 1] == WTRX, 'TofuswapV2Router: INVALID_PATH');
-        amounts = TofuswapV2LibraryTofu.getAmountsOut(factory, amountIn, getFeeBasisPoints(), path);
+        uint feeBasisPoints = getFeeBasisPoints();
+        amounts = TofuswapV2LibraryTofu.getAmountsOut(factory, amountIn, feeBasisPoints, path);
         require(amounts[amounts.length - 1] >= amountOutMin, 'TofuswapV2Router: INSUFFICIENT_OUTPUT_AMOUNT');
         TransferHelper.safeTransferFrom(
             path[0], msg.sender, TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]
         );
-        _swap(amounts, path, address(this));
+        _swap(amounts, path, address(this), feeBasisPoints < 30);
         IWTRX(WTRX).withdraw(amounts[amounts.length - 1]);
         TransferHelper.safeTransferTRX(to, amounts[amounts.length - 1]);
     }
@@ -321,12 +330,13 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         returns (uint[] memory amounts)
     {
         require(path[0] == WTRX, 'TofuswapV2Router: INVALID_PATH');
-        amounts = TofuswapV2LibraryTofu.getAmountsIn(factory, amountOut, getFeeBasisPoints(), path);
+        uint feeBasisPoints = getFeeBasisPoints();        
+        amounts = TofuswapV2LibraryTofu.getAmountsIn(factory, amountOut, feeBasisPoints, path);
         require(amounts[0] <= msg.value, 'TofuswapV2Router: EXCESSIVE_INPUT_AMOUNT');
         IWTRX(WTRX).deposit.value(amounts[0])();
         assert(IWTRX(WTRX).transfer(TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]));
-        _swap(amounts, path, to);
-        // refund dust trx, if any
+        _swap(amounts, path, to, feeBasisPoints < 30);
+        // refund dust trx, if any, condition
         if (msg.value > amounts[0]) TransferHelper.safeTransferTRX(msg.sender, msg.value - amounts[0]);
     }
 
@@ -348,7 +358,11 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
             }
             (uint amount0Out, uint amount1Out) = input == token0 ? (uint(0), amountOutput) : (amountOutput, uint(0));
             address to = i < path.length - 2 ? TofuswapV2LibraryTofu.pairFor(factory, output, path[i + 2]) : _to;
-            pair.swapWithTofu(amount0Out, amount1Out, to, new bytes(0));
+            if (feeBasisPoints < 30) {
+                pair.swapWithTofu(amount0Out, amount1Out, to, new bytes(0));
+            } else {
+                pair.swap(amount0Out, amount1Out, to, new bytes(0));
+            }
         }
     }
     function swapExactTokensForTokensSupportingFeeOnTransferTokens(
