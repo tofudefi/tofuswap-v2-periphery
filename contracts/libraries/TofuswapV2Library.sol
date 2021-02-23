@@ -24,7 +24,7 @@ library TofuswapV2Library {
                 hex'ff',
                 factory,
                 keccak256(abi.encodePacked(token0, token1)),
-                hex'ac7eb8a6c55e312a713a76c3b66c2c200c2a94ef54945093e2c8fb74a17727c8' // init code hash
+                hex'67362b6851b5759acb891575dad6796f51c77306b174ae6c6fd05882d9bd1bf3' // init code hash
             ))));
     }
 
