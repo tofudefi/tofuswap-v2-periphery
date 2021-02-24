@@ -51,7 +51,7 @@ describe('TofuswapV2Router02', () => {
   })
 
   it('getAmountOut', async () => {
-    expect(await router.getAmountOut(bigNumberify('2000000000000000000'), bigNumberify('100000000000000000000'), bigNumberify('100000000000000000000'))).to.eq(bigNumberify('1956939487823051884'))
+    expect(await router.getAmountOut(bigNumberify('2000000000000000000'), bigNumberify('100000000000000000000'), bigNumberify('100000000000000000000'))).to.eq(bigNumberify('1958861938469381752'))
     await expect(router.getAmountOut(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
       'TofuswapV2Library: INSUFFICIENT_INPUT_AMOUNT'
     )
@@ -65,7 +65,7 @@ describe('TofuswapV2Router02', () => {
 
   it('getAmountIn', async () => {
     expect(await router.getAmountIn(bigNumberify(1), bigNumberify(100), bigNumberify(100))).to.eq(bigNumberify(2))
-    expect(await router.getAmountIn(bigNumberify('1000000000000000000'), bigNumberify('100000000000000000000'), bigNumberify('100000000000000000000'))).to.eq(bigNumberify('1012125260622254611'))
+    expect(await router.getAmountIn(bigNumberify('1000000000000000000'), bigNumberify('100000000000000000000'), bigNumberify('100000000000000000000'))).to.eq(bigNumberify('1011112122223233335'))
     await expect(router.getAmountIn(bigNumberify(0), bigNumberify(100), bigNumberify(100))).to.be.revertedWith(
       'TofuswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT'
     )
