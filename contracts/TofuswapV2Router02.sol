@@ -336,8 +336,8 @@ contract TofuswapV2Router02 is ITofuswapV2Router02 {
         IWTRX(WTRX).deposit.value(amounts[0])();
         assert(IWTRX(WTRX).transfer(TofuswapV2LibraryTofu.pairFor(factory, path[0], path[1]), amounts[0]));
         _swap(amounts, path, to, feeBasisPoints < 30);
-        // refund dust trx, if any, condition
-        if (msg.value > amounts[0]) TransferHelper.safeTransferTRX(msg.sender, msg.value - amounts[0]);
+        // refund dust trx, if more than 0.001 TRX, otherwise it makes no sense because transfer cost is about 1.4 TRX
+        if (msg.value - amounts[0] > 1000) TransferHelper.safeTransferTRX(msg.sender, msg.value - amounts[0]);
     }
 
     // **** SWAP (supporting fee-on-transfer tokens) ****
